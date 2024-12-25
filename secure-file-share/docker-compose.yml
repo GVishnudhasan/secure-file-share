@@ -3,6 +3,7 @@ version: '3.8'
 services:
   web:
     build: .
+    container_name: secure-file-share-app
     command: >
       sh -c "python manage.py makemigrations &&
              python manage.py migrate &&
@@ -11,3 +12,6 @@ services:
       - .:/secure-file-share
     ports:
       - "8000:8000"
+    environment:
+      - DEBUG=true
+    
