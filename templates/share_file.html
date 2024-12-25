@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid min-vh-50 d-flex justify-content-center align-items-center" style="background-color: #f9f9f9;">
+    <div class="col-md-6">
+        <div class="card shadow-lg" style="border-radius: 15px;">
+            <div class="card-header text-white text-center" style="background-color: #000000; border-top-left-radius: 15px; border-top-right-radius: 15px;">
+                <h2>Share File</h2>
+            </div>
+            <div class="card-body" style="background-color: #ffffff; border-radius: 15px;">
+                {% if existing_share %}
+                <div class="alert alert-warning" role="alert">
+                    This file is already shared with <strong>{{ shared_with_username }}</strong>. 
+                    Do you want to share it again? If so, click "Share Anyway."
+                </div>
+                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            Username to Share With
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <div class="text-danger">
+                                {% for error in form.username.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    {% if existing_share %}
+                    <input type="hidden" name="force_share" value="true">
+                    {% endif %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" style="border-radius: 25px; background-color: #000000; border: none;">
+                            {% if existing_share %}Share Anyway{% else %}Share File{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom styling */
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .btn-primary {
+        background-color: #000000;
+        border: none;
+        border-radius: 25px;
+        padding: 12px;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        background-color: #7e8282;
+        transform: scale(1.05);
+    }
+    .alert-info {
+        background-color: rgb(224, 247, 247);
+        border-color: rgb(179, 224, 224);
+        color: rgb(0, 95, 95);
+    }
+    .form-control {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 8px rgba(123, 128, 128, 0.6);
+    }
+</style>
+
+{% endblock %}

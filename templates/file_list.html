@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Tabs for toggling between My Files and Shared Files -->
+    <ul class="nav nav-tabs" id="fileTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="my-files-tab" data-bs-toggle="tab" data-bs-target="#my-files" type="button" role="tab" aria-controls="my-files" aria-selected="true">
+                My Files
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="shared-files-tab" data-bs-toggle="tab" data-bs-target="#shared-files" type="button" role="tab" aria-controls="shared-files" aria-selected="false">
+                Shared With Me
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-4" id="fileTabsContent">
+        <!-- My Files Section -->
+        <div class="tab-pane fade show active" id="my-files" role="tabpanel" aria-labelledby="my-files-tab">
+            {% if user_files %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for file in user_files %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title text-truncate mb-0" title="{{ file.filename }}">
+                                    {{ file.filename }}
+                                </h5>
+                                <div class="dropdown">
+                                    <button class="btn btn-link text-dark p-0" type="button" data-bs-toggle="dropdown">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical" viewBox="0 0 16 16">
+                                            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                        </svg>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <form method="get" action="{% url 'download_file' file.id %}">
+                                                <button type="submit" class="dropdown-item">
+                                                    <i class="bi bi-download me-2"></i>Download
+                                                </button>
+                                            </form>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'share_file' file.id %}">
+                                                <i class="bi bi-share me-2"></i>Share
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="post" action="{% url 'delete_file' file.id %}" onsubmit="return confirm('Are you sure you want to delete this file?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="dropdown-item text-danger">
+                                                    <i class="bi bi-trash me-2"></i>Delete
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="card-text text-muted small mb-3">
+                                <i class="bi bi-calendar me-1"></i>
+                                {{ file.upload_date|date:"M d, Y H:i" }}
+                            </p>
+                            <div class="d-flex gap-2">
+                                <form method="get" action="{% url 'download_file' file.id %}">
+                                    <button type="submit" class="btn btn-dark btn-sm">
+                                        <i class="bi bi-download me-1"></i>Download
+                                    </button>
+                                </form>
+                                <a href="{% url 'share_file' file.id %}" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-share me-1"></i>Share
+                                </a>
+                                
+                                <!-- New Share with Link Button -->
+                                <button 
+                                    class="btn btn-outline-secondary btn-sm" 
+                                    onclick="generateLink('{{ file.id }}')" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#shareLinkModal">
+                                    <i class="bi bi-link-45deg me-1"></i>Share with Link
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-file-earmark-text display-4 text-muted mb-3"></i>
+                    <h5>No files uploaded yet</h5>
+                    <p class="text-muted">Start sharing by uploading your first file</p>
+                    <a href="{% url 'upload_file' %}" class="btn btn-dark">
+                        <i class="bi bi-upload me-1"></i>Upload File
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Shared With Me Section -->
+        <div class="tab-pane fade" id="shared-files" role="tabpanel" aria-labelledby="shared-files-tab">
+            {% if shared_files %}
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for share in shared_files %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate mb-2" title="{{ share.file.filename }}">
+                                {{ share.file.filename }}
+                            </h5>
+                            <p class="card-text text-muted small mb-3">
+                                <i class="bi bi-person me-1"></i>
+                                Shared by {{ share.shared_by.username }}<br>
+                                <i class="bi bi-calendar me-1"></i>
+                                {{ share.shared_date|date:"M d, Y H:i" }}
+                            </p>
+                            <form method="get" action="{% url 'download_file' share.file.id %}">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-download me-1"></i>Download
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-people display-4 text-muted mb-3"></i>
+                    <h5>No files shared with you</h5>
+                    <p class="text-muted">Files shared with you by others will appear here</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Shareable Link -->
+<div class="modal fade" id="shareLinkModal" tabindex="-1" aria-labelledby="shareLinkModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareLinkModalLabel">Shareable Link</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group">
+                    <input type="text" id="shareableLink" class="form-control" readonly>
+                    <button class="btn btn-outline-primary" onclick="copyLink()">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function generateLink(fileId) {
+        fetch(`/generate-shareable-link/${fileId}/`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('shareableLink').value = data.link;
+            })
+            .catch(error => {
+                console.error('Error generating link:', error);
+            });
+    }
+
+    function copyLink() {
+        const linkInput = document.getElementById('shareableLink');
+        linkInput.select();
+        document.execCommand('copy');
+        alert('Link copied to clipboard!');
+    }
+</script>
+{% endblock %}

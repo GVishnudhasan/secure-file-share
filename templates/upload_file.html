@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid min-vh-50 d-flex justify-content-center align-items-center" style="background-color: #f9f9f9;">
+    <div class="col-md-6">
+        <div class="card shadow-lg rounded-3">
+            <div class="card-header text-white text-center" style="background-color: #000000;">
+                <h2 class="mb-0">Upload Files</h2>
+            </div>
+            <div class="card-body">
+                <form id="upload-form" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="{{ form.files.id_for_label }}" class="form-label fw-bold">
+                            Select Files to Upload
+                        </label>
+                        <input type="file" name="files" id="id_files" multiple 
+                               accept=".txt,.pdf,.docx,.jpg,.png,.zip" 
+                               class="form-control">
+                        <div class="form-text">Allowed file types: txt, pdf, docx, jpg, png, zip</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100" id="upload-btn">
+                        Upload Files
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Custom styling */
+    body {
+        background-color: #f9f9f9;
+    }
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    .btn-primary {
+        background-color: #000000;
+        border: none;
+        border-radius: 25px;
+        padding: 12px;
+        transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+        background-color: #000000;
+        transform: scale(1.05);
+    }
+    .form-control {
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+    }
+    .form-control:focus {
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+        border-color: #000000;
+    }
+    .form-text {
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
